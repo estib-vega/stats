@@ -90,7 +90,7 @@ class Bot(ChromeDriver):
 
     def like_posts(self):
         creator_profile_link, username = self.get_post_creator()
-        if username in self.usernames_to_ignore: 
+        if username in self.usernames_to_ignore:
             print "should ignore:", username
             return
         print "liking posts from:", username
@@ -102,7 +102,7 @@ class Bot(ChromeDriver):
                 self.like(post_link, username)
             except Exception:
                 print "could not like"
-            
+
 
     def like_post_creator(self, post_link):
         self.go_to(post_link)
@@ -115,7 +115,7 @@ class Bot(ChromeDriver):
 
     def like_explore_posts(self):
         if self.likes_overall >= self.max_total_likes_per_run: return
-        
+
         explore = self.addresses["explore"]
         self.go_to(explore)
         post_links = self.get_post_links()
@@ -152,14 +152,13 @@ class Bot(ChromeDriver):
             followers.append(usrnm)
 
         if write_to_file:
-            # followers_file_name = self.file_names["followers"].format(username, self.today())
             followers_file_name = self.file_names["followers"].format(username, now.strftime("%Y-%m-%d"))
             if os.path.exists(followers_file_name):
                 os.remove(followers_file_name)
             with open(followers_file_name, "a") as followers_file:
                 for follower in followers:
                     followers_file.write("{}\n".format(follower))
-        
+
         print "Followers: {}".format(len(followers))
         self.click("user_followers_window_close_button")
         print datetime.now()
@@ -176,16 +175,6 @@ class Bot(ChromeDriver):
         new_followers, _ = get_followers_delta(yesterdays_followers, today_followers)
         print len(new_followers), "new followers"
 
-        # todays_new_follows = self.file_names["new_follows"].format(today)
-        # if os.path.exists(todays_new_follows):
-        #     os.remove(todays_new_follows)
-        # with open(todays_new_follows, "a") as new_followers_file:  
-        #     for follower in new_followers[:self.max_new_follows]:
-        #         try:
-        #             # self.follow_user(follower)
-        #             new_followers_file.write("{}\n".format(follower))
-        #         except Exception as e:
-        #             print e
         return len(new_followers)
 
     def unfollow_past_followers(self, now):
