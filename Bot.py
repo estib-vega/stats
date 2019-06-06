@@ -198,7 +198,7 @@ class Bot(ChromeDriver):
             number_of_new_followers = self.follow_new_followers(now)
 
             past_liked_usernames = []
-            for day in range(7):
+            for day in range(14):
                 now = datetime.now() - timedelta(day + 1)
                 liked_past = self.get_liked_today(now.strftime("%Y-%m-%d"))
                 past_liked_usernames = list(set(past_liked_usernames + liked_past))
