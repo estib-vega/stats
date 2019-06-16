@@ -193,10 +193,10 @@ class Bot(ChromeDriver):
     def explore(self):
         try:
             now = datetime.now()
-            self.wait(60 * 3)
             self.start_session(cookie_file=self.file_names["cookies"])
             self.get_followers_for(self.username, now=now)
             number_of_new_followers = self.follow_new_followers(now)
+            self.wait(60 * 3)
 
             past_liked_usernames = []
             for day in range(14):
