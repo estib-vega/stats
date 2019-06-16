@@ -11,5 +11,5 @@ password = ""
 
 if __name__ == "__main__":
     bot = Bot(username, password, wait_period_between_runs=40)
-    bot.hashtags_to_like = ["love", "instagood", "photooftheday", "cute", "tbt", "photography", "fashion"]
+    bot.hashtags_to_like = ["wanderlust", "wonderful_places", "travel", "fashion"]
     bot.explore()
