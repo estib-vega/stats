@@ -201,7 +201,7 @@ class Bot(ChromeDriver):
         hashtag_files.sort()
 
         for file in hashtag_files:
-            with open(file) as f:
+            with open("users_by_hashtags/{}".format(file)) as f:
                 for line in f:
                     username = line.strip()
                     potential_followers.add(username)
