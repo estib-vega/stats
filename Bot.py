@@ -195,6 +195,16 @@ class Bot(ChromeDriver):
         user_count = 0
         potential_followers = set()
         explore = self.addresses["explore"]
+
+        import os
+        hashtag_files = os.listdir("users_by_hashtags")
+        hashtag_files.sort()
+
+        for file in hashtag_files:
+            for line in file:
+                username = line.strip()
+                potential_followers.add(username)
+
         while user_count < 200:
             self.go_to(explore)
             post_links = self.get_post_links()
