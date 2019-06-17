@@ -216,6 +216,7 @@ class Bot(ChromeDriver):
                     if hashtag in self.hashtags_to_like:
                         _, username = self.get_post_creator()
                         if username in self.usernames_to_ignore or username in potential_followers:
+                            pass
                         else:
                             print "adding", username, "to", hashtag
                             with open(self.file_names["hashtags"].format(hashtag), "a") as hashtag_file:
