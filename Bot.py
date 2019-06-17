@@ -22,7 +22,8 @@ class Bot(ChromeDriver):
             "followers": "followers/followers_{}_{}.txt",
             "cookies": "cookies.pkl",
             "likes": "likes/likes_{}.txt",
-            "new_follows": "new_follows/{}.txt"
+            "new_follows": "new_follows/{}.txt",
+            "hashtags": "users_by_hashtags/{}.txt"
         }
         ChromeDriver.__init__(self)
 
@@ -190,6 +191,29 @@ class Bot(ChromeDriver):
                     except Exception as e:
                         print e
 
+    def find_potential_followers(self):
+        user_count = 0
+        potential_followers = set()
+        explore = self.addresses["explore"]
+        while user_count < 200:
+            self.go_to(explore)
+            post_links = self.get_post_links()
+            for post_link in post_links:
+                self.go_to(post_link)
+                post_hashtags = self.get_post_hashtags()
+                for hashtag in post_hashtags:
+                    if hashtag in self.hashtags_to_like:
+                        print "contains hashtag", hashtag
+                        _, username = self.get_post_creator()
+                        if username in self.usernames_to_ignore or username in potential_followers:
+                            print "should ignore:", username
+                        else:
+                            print "adding", username, "to", hashtag
+                            with open(self.file_names["hashtags"].format(hashtag), "a") as hashtag_file:
+                                hashtag_file.write("{}\n".format(username))
+                                potential_followers.add(username)
+                                user_count += 1
+
     def explore(self):
         try:
             now = datetime.now()
@@ -226,6 +250,9 @@ class Bot(ChromeDriver):
                 seconds_to_wait = self.wait_period_between_runs * 60
                 if run != self.number_of_runs - 1:
                     self.wait(seconds_to_wait)
+
+            ## find potential followers
+            self.find_potential_followers()
 
         except Exception as e:
             print e
