@@ -263,7 +263,7 @@ class Bot(ChromeDriver):
                     self.wait(seconds_to_wait)
 
             ## find potential followers
-            self.find_potential_followers()
+            # self.find_potential_followers()
 
         except Exception as e:
             print e
