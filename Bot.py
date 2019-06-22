@@ -91,7 +91,8 @@ class Bot(ChromeDriver):
 
     def like_posts(self):
         creator_profile_link, username = self.get_post_creator()
-        if username in self.usernames_to_ignore:
+        ignore_users = set(self.usernames_to_ignore)
+        if username in ignore_users:
             print "should ignore:", username
             return
         print "liking posts from:", username
@@ -103,7 +104,8 @@ class Bot(ChromeDriver):
                 self.like(post_link, username)
             except Exception:
                 print "could not like"
-
+        ignore_users.add(username)
+        self.usernames_to_ignore = list(ignore_users)
 
     def like_post_creator(self, post_link):
         self.go_to(post_link)
@@ -274,8 +276,3 @@ class Bot(ChromeDriver):
 if __name__ == "__main__":
     bot = Bot("estib_vega", "")
     bot.start_session(cookie_file=bot.file_names["cookies"])
-    now = datetime.now()
-    #bot.unfollow_past_followers(now)
-    # bot.unfollow_past_followers(now - timedelta(1))
-    # bot.unfollow_past_followers(now - timedelta(2))
-    bot.unfollow_past_followers(now - timedelta(3))

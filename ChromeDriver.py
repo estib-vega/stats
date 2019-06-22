@@ -20,7 +20,7 @@ class ChromeDriver:
             "login_username_input": "//input[@name='username']",
             "login_password_input": "//input[@type='password']",
             "login_submit_button": "//button[@type='submit']",
-            "post_like_button": "//button[span[@aria-label='Me gusta']]",
+            "post_like_button": "//article/div[2]/section/span/button[span[@aria-label='Me gusta']]",
             "post_username_link": "//header/div/div/div/h2/a",
             "post_hashtag_link": "//li[@role='menuitem']//a",
             "user_publications_tag": "//header/section/ul/li[1]",
@@ -68,14 +68,14 @@ class ChromeDriver:
         input_element = self.get_element(selector_name)
         input_element.clear()
         input_element.send_keys(text)
-    
+
     def click(self, selector_name):
         element = self.get_element(selector_name)
         element.click()
 
     def execute_script(self, *args, **kwargs):
         self.driver.execute_script(*args)
-    
+
     def login(self, username, password):
         login_address = self.addresses["login"]
         self.go_to(login_address)
@@ -83,7 +83,7 @@ class ChromeDriver:
         self.write_into_text_input("login_username_input", username)
         self.write_into_text_input("login_password_input", password)
         self.click("login_submit_button")
-    
+
     def exchange_cookies(self, cookie_file):
         cookies = pickle.load(open(cookie_file, "rb"))
         for cookie in cookies:
@@ -95,7 +95,7 @@ class ChromeDriver:
         self.go_to(landing_page)
         self.exchange_cookies(cookie_file)
 
-        # Should check if cookie file is provided, or if cookie expired and 
+        # Should check if cookie file is provided, or if cookie expired and
         # needs to re-login
 
     def end_session(self):
@@ -104,7 +104,7 @@ class ChromeDriver:
     def scroll_through_window(self, window, found_end_tolerance=10, step=400):
         top = self.browser_commands["scroll_top_attribute"]
         height = self.browser_commands["scroll_height_attribute"]
-        
+
         scroll_top = window.get_attribute(top)
 
         found_end_count = 0
@@ -115,12 +115,12 @@ class ChromeDriver:
             self.execute_script(scroll_script, window, target_scroll)
             self.wait(0.3)
 
-            if scroll_top == window.get_attribute(top): 
+            if scroll_top == window.get_attribute(top):
                 found_end_count += 1
                 print "end?"
             elif scroll_top < window.get_attribute(height):
                 found_end_count = 0
-            if found_end_count == found_end_tolerance: 
+            if found_end_count == found_end_tolerance:
                 print "this is the end"
                 break
             scroll_top = window.get_attribute(top)
