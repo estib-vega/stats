@@ -229,7 +229,7 @@ class Bot(ChromeDriver):
 
     def explore(self):
         try:
-            now = datetime.now() - timedelta(1)
+            now = datetime.now()
             self.start_session(cookie_file=self.file_names["cookies"])
             self.get_followers_for(self.username, now=now)
             number_of_new_followers = self.follow_new_followers(now)
