@@ -77,6 +77,11 @@ class Bot(ChromeDriver):
         username = profile_link.split("/")[-2]
         return profile_link, username
 
+    def can_like(self):
+        now = datetime.now()
+        end_of_session_day = self.session_start_time + timedelta(1)
+        return self.likes_overall < self.max_total_likes_per_run and now < end_of_session_day
+
     def log_like(self, username, post_link):
         likes_file_name = self.file_names["likes"].format(self.today())
         with open(likes_file_name, "a") as likes_file:
@@ -100,7 +105,7 @@ class Bot(ChromeDriver):
         post_links = self.get_post_links()
         for post_link in post_links[:self.likes_per_user]:
             try:
-                if self.likes_overall >= self.max_total_likes_per_run: return
+                if not self.can_like(): return # self.likes_overall >= self.max_total_likes_per_run: return
                 self.like(post_link, username)
             except Exception:
                 print "could not like"
@@ -117,7 +122,7 @@ class Bot(ChromeDriver):
                 return
 
     def like_explore_posts(self):
-        if self.likes_overall >= self.max_total_likes_per_run: return
+        if not self.can_like(): return # self.likes_overall >= self.max_total_likes_per_run: return
 
         explore = self.addresses["explore"]
         self.go_to(explore)
@@ -259,18 +264,18 @@ class Bot(ChromeDriver):
                 liked_today = self.get_liked_today(self.today())
                 self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
 
-                while self.likes_overall < self.max_total_likes_per_run:
+                while self.can_like(): #self.likes_overall < self.max_total_likes_per_run:
                     self.like_explore_posts()
 
                 ## check if an hour has passed, if not wait
                 like_end = datetime.now()
+                self.likes_overall = 0
+
                 if like_end >= wait_until:
-                    self.likes_overall = 0
                     continue
                 else:
                     time_delta = wait_until - like_end
                     seconds_to_wait = time_delta.seconds
-                    self.likes_overall = 0
 
                 # seconds_to_wait = self.wait_period_between_runs * 60
                 if run != self.number_of_runs - 1:

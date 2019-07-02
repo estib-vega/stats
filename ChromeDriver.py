@@ -94,6 +94,7 @@ class ChromeDriver:
         landing_page = self.addresses["landing_page"]
         self.go_to(landing_page)
         self.exchange_cookies(cookie_file)
+        self.session_start_time = datetime.now()
 
         # Should check if cookie file is provided, or if cookie expired and
         # needs to re-login
