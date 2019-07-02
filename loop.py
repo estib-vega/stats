@@ -19,8 +19,8 @@ def loop():
 
 
             print("next run:", next_run)
-            time_delta = datetime.now() - next_run
-            seconds_to_sleep = time_delta.seconds
+            time_delta =  next_run - datetime.now()
+            seconds_to_sleep = time_delta.seconds if time_delta.seconds > 0 else 0
             print("sleeping...")
             sleep(seconds_to_sleep)
 

@@ -270,6 +270,7 @@ class Bot(ChromeDriver):
                 else:
                     time_delta = wait_until - like_end
                     seconds_to_wait = time_delta.seconds
+                    self.likes_overall = 0
 
                 # seconds_to_wait = self.wait_period_between_runs * 60
                 if run != self.number_of_runs - 1:
