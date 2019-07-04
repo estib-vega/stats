@@ -259,7 +259,7 @@ class Bot(ChromeDriver):
 
             for run in range(self.number_of_runs):
                 like_start = datetime.now()
-                wait_until = like_start + timedelta(hours=1)
+                wait_until = like_start + timedelta(hours=1, minutes=30)
 
                 liked_today = self.get_liked_today(self.today())
                 self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
