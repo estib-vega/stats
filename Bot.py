@@ -262,7 +262,7 @@ class Bot(ChromeDriver):
                 liked_today = self.get_liked_today(self.today())
                 self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
 
-                while self.can_like(): #self.likes_overall < self.max_total_likes_per_run:
+                while self.can_like():
                     self.like_explore_posts()
 
                 ## check if an hour has passed, if not wait
@@ -275,12 +275,10 @@ class Bot(ChromeDriver):
                     time_delta = wait_until - like_end
                     seconds_to_wait = time_delta.seconds
 
-                # seconds_to_wait = self.wait_period_between_runs * 60
+
                 if run != self.number_of_runs - 1:
                     self.wait(seconds_to_wait)
 
-            ## find potential followers
-            # self.find_potential_followers()
 
         except Exception as e:
             print e
