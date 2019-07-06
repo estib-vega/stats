@@ -255,9 +255,6 @@ class Bot(ChromeDriver):
                 print "waiting for tomorrow"
                 self.wait(15 * 60)
 
-            self.wait(120 * 60)
-
-
             for run in range(self.number_of_runs):
                 like_start = datetime.now()
                 wait_until = like_start + timedelta(hours=1, minutes=30)
