@@ -13,6 +13,7 @@ def loop():
 
             os.system("git pull")
             os.system("python script.py")
+            os.system("git pull")
             os.system("git add .")
             os.system("git commit -m \"New stats\"")
             os.system("git push")

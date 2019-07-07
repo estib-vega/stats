@@ -10,6 +10,6 @@ username = "estib_vega"
 password = ""
 
 if __name__ == "__main__":
-    bot = Bot(username, password, max_total_likes_per_run=200, number_of_runs=4)
+    bot = Bot(username, password, max_total_likes_per_run=150, number_of_runs=4)
     bot.hashtags_to_like = ["blackandwhite", "weddingday", "natgeo", "nightsky", "usa", "loveyourself", "videomaker", "animallove", "foodies"]
     bot.explore()
