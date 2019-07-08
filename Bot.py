@@ -92,6 +92,8 @@ class Bot(ChromeDriver):
         self.log_like(username, post_link)
         self.click("post_like_button")
         self.likes_overall += 1
+        # wait between likes???
+        self.wait(10)
         print self.likes_overall
 
     def like_posts(self):
