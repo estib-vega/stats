@@ -239,45 +239,45 @@ class Bot(ChromeDriver):
             self.get_followers_for(self.username, now=now)
             number_of_new_followers = self.follow_new_followers(now)
 
-            past_liked_usernames = []
-            for day in range(14):
-                now = datetime.now() - timedelta(day + 1)
-                liked_past = self.get_liked_today(now.strftime("%Y-%m-%d"))
-                past_liked_usernames = list(set(past_liked_usernames + liked_past))
+            # past_liked_usernames = []
+            # for day in range(14):
+            #     now = datetime.now() - timedelta(day + 1)
+            #     liked_past = self.get_liked_today(now.strftime("%Y-%m-%d"))
+            #     past_liked_usernames = list(set(past_liked_usernames + liked_past))
 
-            is_tomorrow = False
-            while not is_tomorrow:
-                today = now.strftime("%d")
-                maybe_tomorrow = datetime.now().strftime("%d")
-                if today != maybe_tomorrow:
-                    is_tomorrow = True
-                    continue
-                print "waiting for tomorrow"
-                self.wait(15 * 60)
+            # is_tomorrow = False
+            # while not is_tomorrow:
+            #     today = now.strftime("%d")
+            #     maybe_tomorrow = datetime.now().strftime("%d")
+            #     if today != maybe_tomorrow:
+            #         is_tomorrow = True
+            #         continue
+            #     print "waiting for tomorrow"
+            #     self.wait(15 * 60)
 
-            for run in range(self.number_of_runs):
-                like_start = datetime.now()
-                wait_until = like_start + timedelta(hours=1, minutes=30)
+            # for run in range(self.number_of_runs):
+            #     like_start = datetime.now()
+            #     wait_until = like_start + timedelta(hours=1, minutes=30)
 
-                liked_today = self.get_liked_today(self.today())
-                self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
+            #     liked_today = self.get_liked_today(self.today())
+            #     self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
 
-                while self.can_like():
-                    self.like_explore_posts()
+            #     while self.can_like():
+            #         self.like_explore_posts()
 
-                ## check if an hour has passed, if not wait
-                like_end = datetime.now()
-                self.likes_overall = 0
+            #     ## check if an hour has passed, if not wait
+            #     like_end = datetime.now()
+            #     self.likes_overall = 0
 
-                if like_end >= wait_until:
-                    continue
-                else:
-                    time_delta = wait_until - like_end
-                    seconds_to_wait = time_delta.seconds
+            #     if like_end >= wait_until:
+            #         continue
+            #     else:
+            #         time_delta = wait_until - like_end
+            #         seconds_to_wait = time_delta.seconds
 
 
-                if run != self.number_of_runs - 1:
-                    self.wait(seconds_to_wait)
+            #     if run != self.number_of_runs - 1:
+            #         self.wait(seconds_to_wait)
 
 
         except Exception as e:
