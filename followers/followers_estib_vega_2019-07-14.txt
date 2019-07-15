@@ -1315,7 +1315,6 @@ yannick.ges
 andreitacg
 lauracronic8
 lidiamihailidis
-<<<<<<< HEAD
 lovycaremx
 rosi_adler
 zhazna
@@ -1565,5 +1564,3 @@ lulacarrillo
 pau_ve
 ro_ortiz_cruz
 ac.ocampo
-=======
->>>>>>> 541ea0179c85ac95acc4f931310a6f90e946115b
