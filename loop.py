@@ -1,6 +1,7 @@
 import os
 from time import sleep
 from datetime import datetime, timedelta
+from Bot import like, get_followers
 
 def loop():
     should_stop = False
@@ -12,7 +13,8 @@ def loop():
             print("start time:", now)
 
             os.system("git pull")
-            os.system("python script.py")
+            like()
+            get_followers()
             os.system("git pull")
             os.system("git add .")
             os.system("git commit -m \"New stats\"")

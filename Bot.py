@@ -1,21 +1,22 @@
-from __future__ import division
-from datetime import datetime, timedelta
 from ChromeDriver import ChromeDriver
+from datetime import datetime, timedelta
 import os
-from analytics import get_followers_delta
+from analytics import get_followers_delta, get_like_data
+import urllib.parse as url_parse
 
 class Bot(ChromeDriver):
-    def __init__(self, username, password, max_total_likes_per_run=200, number_of_runs=5, wait_period_between_runs=40, likes_per_user=5, unfollow_after_days=3, max_new_follows=60):
+    def __init__(self, username, password, max_total_likes_per_run=200, number_of_runs=5, likes_per_user=5, unfollow_after_days=3, max_new_follows=60, wait_time_between_likes=5, headless=False):
         self.username = username
         self.password = password
         self.max_total_likes_per_run = max_total_likes_per_run
         self.number_of_runs = number_of_runs
+        self.wait_time_between_likes = wait_time_between_likes
         self.max_new_follows = max_new_follows
-        self.wait_period_between_runs = wait_period_between_runs
         self.unfollow_after_days = unfollow_after_days
         self.usernames_to_ignore = []
         self.hashtags_to_like = []
         self.likes_overall = 0
+        self.total_likes = 0
         self.likes_dictionary = {}
         self.likes_per_user = likes_per_user
         self.file_names = {
@@ -25,7 +26,7 @@ class Bot(ChromeDriver):
             "new_follows": "new_follows/{}.txt",
             "hashtags": "users_by_hashtags/{}.txt"
         }
-        ChromeDriver.__init__(self)
+        ChromeDriver.__init__(self, headless=headless)
 
     def today(self):
         return datetime.now().strftime("%Y-%m-%d")
@@ -87,28 +88,34 @@ class Bot(ChromeDriver):
         with open(likes_file_name, "a") as likes_file:
             likes_file.write("{},{},{}\n".format(username, post_link, datetime.now()))
 
+    def track_likes(self):
+        self.likes_overall += 1
+        self.total_likes += 1
+        likes_remaining = (self.max_total_likes_per_run * self.number_of_runs) - self.total_likes
+        print(likes_remaining)
+
     def like(self, post_link, username):
         self.go_to(post_link)
         self.log_like(username, post_link)
         self.click("post_like_button")
-        self.likes_overall += 1
-        print self.likes_overall
+        self.track_likes()
+        self.wait(self.wait_time_between_likes)
 
     def like_posts(self):
         creator_profile_link, username = self.get_post_creator()
         ignore_users = set(self.usernames_to_ignore)
         if username in ignore_users:
-            print "should ignore:", username
+            print("should ignore:", username)
             return
-        print "liking posts from:", username
+        print("liking posts from:", username)
         self.go_to(creator_profile_link)
         post_links = self.get_post_links()
         for post_link in post_links[:self.likes_per_user]:
             try:
-                if not self.can_like(): return # self.likes_overall >= self.max_total_likes_per_run: return
+                if not self.can_like(): return
                 self.like(post_link, username)
             except Exception:
-                print "could not like"
+                print("could not like")
         ignore_users.add(username)
         self.usernames_to_ignore = list(ignore_users)
 
@@ -117,16 +124,28 @@ class Bot(ChromeDriver):
         post_hashtags = self.get_post_hashtags()
         for hashtag in post_hashtags:
             if hashtag in self.hashtags_to_like:
-                print "contains hashtag", hashtag
+                print("contains hashtag", hashtag)
                 self.like_posts()
                 return
 
+    def like_hashtag_posts(self):
+        if not self.can_like(): return
+
+        for hashtag in self.hashtags_to_like:
+            address = self.addresses["tag"].format(hashtag)
+            self.go_to(address)
+            self.scroll_down_window()
+            post_links = self.get_post_links(max_links=20)
+            for post_link in post_links:
+                self.like_post_creator(post_link)
+
     def like_explore_posts(self):
-        if not self.can_like(): return # self.likes_overall >= self.max_total_likes_per_run: return
+        if not self.can_like(): return
 
         explore = self.addresses["explore"]
         self.go_to(explore)
-        post_links = self.get_post_links()
+        self.scroll_down_window()
+        post_links = self.get_post_links(max_links=40)
         for post_link in post_links:
             self.like_post_creator(post_link)
 
@@ -143,7 +162,7 @@ class Bot(ChromeDriver):
             return []
 
     def get_followers_for(self, username, write_to_file=True, now=None):
-        print datetime.now()
+        print(datetime.now())
         self.go_to_user_profile(username)
         self.click("user_followers_link")
 
@@ -167,9 +186,9 @@ class Bot(ChromeDriver):
                 for follower in followers:
                     followers_file.write("{}\n".format(follower))
 
-        print "Followers: {}".format(len(followers))
+        print("Followers: {}".format(len(followers)))
         self.click("user_followers_window_close_button")
-        print datetime.now()
+        print(datetime.now())
         return followers
 
     def follow_new_followers(self, now):
@@ -181,14 +200,14 @@ class Bot(ChromeDriver):
         today_followers = self.file_names["followers"].format(self.username, today)
 
         new_followers, _ = get_followers_delta(yesterdays_followers, today_followers)
-        print len(new_followers), "new followers"
+        print(len(new_followers), "new followers")
 
         return len(new_followers)
 
     def unfollow_past_followers(self, now):
         past_time = now - timedelta(self.unfollow_after_days)
         past = past_time.strftime("%Y-%m-%d")
-        print "unfollowing from day", past, self.unfollow_after_days
+        print("unfollowing from day", past, self.unfollow_after_days)
         past_new_follows = self.file_names["new_follows"].format(past)
         if os.path.exists(past_new_follows):
             with open(past_new_follows) as past_followers_file:
@@ -196,7 +215,7 @@ class Bot(ChromeDriver):
                     try:
                         self.unfollow_user(past_follower)
                     except Exception as e:
-                        print e
+                        print(e)
 
     def find_potential_followers(self):
         user_count = 0
@@ -225,66 +244,73 @@ class Bot(ChromeDriver):
                         if username in self.usernames_to_ignore or username in potential_followers:
                             pass
                         else:
-                            print "adding", username, "to", hashtag
+                            print("adding", username, "to", hashtag)
                             with open(self.file_names["hashtags"].format(hashtag), "a") as hashtag_file:
                                 hashtag_file.write("{}\n".format(username))
                                 potential_followers.add(username)
                                 user_count += 1
-                            print user_count
+                            print(user_count)
 
     def explore(self):
         try:
             now = datetime.now()
             self.start_session(cookie_file=self.file_names["cookies"])
-            self.get_followers_for(self.username, now=now)
-            number_of_new_followers = self.follow_new_followers(now)
 
-            # past_liked_usernames = []
-            # for day in range(14):
-            #     now = datetime.now() - timedelta(day + 1)
-            #     liked_past = self.get_liked_today(now.strftime("%Y-%m-%d"))
-            #     past_liked_usernames = list(set(past_liked_usernames + liked_past))
+            past_liked_usernames = []
+            for day in range(7):
+                now = datetime.now() - timedelta(day + 1)
+                liked_past = self.get_liked_today(now.strftime("%Y-%m-%d"))
+                past_liked_usernames = list(set(past_liked_usernames + liked_past))
 
-            # is_tomorrow = False
-            # while not is_tomorrow:
-            #     today = now.strftime("%d")
-            #     maybe_tomorrow = datetime.now().strftime("%d")
-            #     if today != maybe_tomorrow:
-            #         is_tomorrow = True
-            #         continue
-            #     print "waiting for tomorrow"
-            #     self.wait(15 * 60)
+            for run in range(self.number_of_runs):
+                like_start = datetime.now()
+                wait_until = like_start + timedelta(hours=1, minutes=10)
 
-            # for run in range(self.number_of_runs):
-            #     like_start = datetime.now()
-            #     wait_until = like_start + timedelta(hours=1, minutes=30)
+                liked_today = self.get_liked_today(self.today())
+                self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
 
-            #     liked_today = self.get_liked_today(self.today())
-            #     self.usernames_to_ignore = list(set(past_liked_usernames + liked_today))
+                while self.can_like():
+                    self.like_explore_posts()
+                    # self.like_hashtag_posts()
 
-            #     while self.can_like():
-            #         self.like_explore_posts()
+                ## check if an hour has passed, if not wait
+                like_end = datetime.now()
+                self.likes_overall = 0
 
-            #     ## check if an hour has passed, if not wait
-            #     like_end = datetime.now()
-            #     self.likes_overall = 0
+                if like_end >= wait_until:
+                    continue
+                else:
+                    time_delta = wait_until - like_end
+                    seconds_to_wait = time_delta.seconds
 
-            #     if like_end >= wait_until:
-            #         continue
-            #     else:
-            #         time_delta = wait_until - like_end
-            #         seconds_to_wait = time_delta.seconds
-
-
-            #     if run != self.number_of_runs - 1:
-            #         self.wait(seconds_to_wait)
-
+                if run != self.number_of_runs - 1:
+                    self.wait(seconds_to_wait)
 
         except Exception as e:
-            print e
-        print "ended"
-        print "new followers", number_of_new_followers
+            print(e)
+            print("\n")
+
+        print("ended")
         self.end_session()
+
+def like():
+    username = "estib_vega"
+    password = ""
+
+    bot = Bot(username, password, max_total_likes_per_run=200, number_of_runs=3, wait_time_between_likes=2, headless=True)
+    bot.hashtags_to_like = ["blackandwhite", "weddingday", "natgeo", "nightsky", "usa", "loveyourself", "videomaker", "animallove", "travel", "love"]
+    bot.explore()
+
+def get_followers():
+    username = "estib_vega"
+    password = ""
+
+    bot = Bot(username, password, max_total_likes_per_run=200, number_of_runs=3, wait_time_between_likes=2, headless=False)
+    now = datetime.now()
+    bot.start_session(cookie_file=bot.file_names["cookies"])
+    bot.get_followers_for(username, now=now)
+
+
 
 if __name__ == "__main__":
     bot = Bot("estib_vega", "")

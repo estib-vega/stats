@@ -1,28 +1,41 @@
 from __future__ import division
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from time import sleep
 from datetime import datetime, timedelta
 import pickle
 
+
+
 class ChromeDriver:
-    def __init__(self):
-        self.driver = webdriver.Chrome(executable_path=r"/Users/steve/Downloads/chromedriver")
+    def __init__(self, headless=False):
+        chrome_options = Options()
+
+        if headless:
+            chrome_options.add_argument("--headless")
+
+        chrome_options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        self.min_seconds_of_wait_to_diplay = 15
+        self.driver = webdriver.Chrome(executable_path=r"/Users/jvega/Documents/chromedriver", chrome_options=chrome_options)
         self.driver.implicitly_wait(10)
+
         self.addresses = {
             "landing_page": "https://www.instagram.com",
             "login": "https://www.instagram.com/accounts/login/?next=/explore",
             "explore": "https://www.instagram.com/explore",
             "username": "https://www.instagram.com/{}",
+            "tag": "https://www.instagram.com/explore/tags/{}"
         }
 
         self.selectors = {
             "login_username_input": "//input[@name='username']",
             "login_password_input": "//input[@type='password']",
             "login_submit_button": "//button[@type='submit']",
-            "post_like_button": "//article/div[2]/section/span/button[span[@aria-label='Me gusta']]",
+            "post_like_button": "//article/div[2]/section/span/button[span[@aria-label='Like']]",
             "post_username_link": "//header/div/div/div/h2/a",
             "post_hashtag_link": "//li[@role='menuitem']//a",
+            "post_creation_date": "//article/div[2]/div[2]//time",
             "user_publications_tag": "//header/section/ul/li[1]",
             "user_followers_link": "//header/section/ul/li[2]/a",
             "user_followees_link": "//header/section/ul/li[3]/a",
@@ -38,6 +51,7 @@ class ChromeDriver:
             "link_attribute": "href",
             "text_attribute": "innerText",
             "title_attribute": "title",
+            "date_attribute": "datetime",
             "scroll_top_attribute": "scrollTop",
             "scroll_height_attribute": "scrollHeight",
             "scroll_script": "arguments[0].scrollTop = arguments[1]"
@@ -46,11 +60,12 @@ class ChromeDriver:
     def wait(self, seconds):
         now = datetime.now()
         wait_till = now + timedelta(seconds=seconds)
-        print "waiting until", wait_till
+        if seconds > self.min_seconds_of_wait_to_diplay:
+            print("waiting until", wait_till)
         sleep(seconds)
 
     def go_to(self, address):
-        self.driver.get(address)
+        return self.driver.get(address)
 
     def go_to_user_profile(self, username):
         profile_link = self.addresses["username"].format(username)
@@ -110,7 +125,7 @@ class ChromeDriver:
 
         found_end_count = 0
         while True:
-            print "."
+            print(".")
             target_scroll = int(scroll_top) + step
             scroll_script = self.browser_commands["scroll_script"]
             self.execute_script(scroll_script, window, target_scroll)
@@ -118,10 +133,18 @@ class ChromeDriver:
 
             if scroll_top == window.get_attribute(top):
                 found_end_count += 1
-                print "end?"
+                print("end?")
             elif scroll_top < window.get_attribute(height):
                 found_end_count = 0
             if found_end_count == found_end_tolerance:
-                print "this is the end"
+                print("this is the end")
                 break
             scroll_top = window.get_attribute(top)
+
+    def scroll_down_window(self):
+        self.wait(2)
+        scroll_by = 500
+        script = "window.scrollBy(0,{})".format(scroll_by)
+        for _ in range(10):
+            self.execute_script(script)
+            self.wait(1)
