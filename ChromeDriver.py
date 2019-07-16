@@ -17,7 +17,7 @@ class ChromeDriver:
 
         chrome_options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
         self.min_seconds_of_wait_to_diplay = 15
-        self.driver = webdriver.Chrome(executable_path=r"/Users/jvega/Documents/chromedriver", chrome_options=chrome_options)
+        self.driver = webdriver.Chrome(executable_path=r"/Users/steve/Downloads/chromedriver", chrome_options=chrome_options)
         self.driver.implicitly_wait(10)
 
         self.addresses = {

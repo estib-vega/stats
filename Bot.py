@@ -2,7 +2,6 @@ from ChromeDriver import ChromeDriver
 from datetime import datetime, timedelta
 import os
 from analytics import get_followers_delta, get_like_data
-import urllib.parse as url_parse
 
 class Bot(ChromeDriver):
     def __init__(self, username, password, max_total_likes_per_run=200, number_of_runs=5, likes_per_user=5, unfollow_after_days=3, max_new_follows=60, wait_time_between_likes=5, headless=False):
@@ -297,7 +296,7 @@ def like():
     username = "estib_vega"
     password = ""
 
-    bot = Bot(username, password, max_total_likes_per_run=200, number_of_runs=3, wait_time_between_likes=2, headless=True)
+    bot = Bot(username, password, max_total_likes_per_run=200, number_of_runs=5, wait_time_between_likes=2, headless=True)
     bot.hashtags_to_like = ["blackandwhite", "weddingday", "natgeo", "nightsky", "usa", "loveyourself", "videomaker", "animallove", "travel", "love"]
     bot.explore()
 
@@ -309,7 +308,7 @@ def get_followers():
     now = datetime.now()
     bot.start_session(cookie_file=bot.file_names["cookies"])
     bot.get_followers_for(username, now=now)
-
+    bot.end_session()
 
 
 if __name__ == "__main__":
